@@ -311,4 +311,100 @@ const countries = [
   // Initialize wheel
   drawWheel();
   spinButton.addEventListener("click", spinWheel);
+  const countries = [
+    { name: "China", code: "CHN" },
+    { name: "India", code: "IND" },
+    { name: "United States", code: "USA" },
+    { name: "Indonesia", code: "IDN" },
+    { name: "Pakistan", code: "PAK" },
+    { name: "Nigeria", code: "NGA" },
+    { name: "Brazil", code: "BRA" },
+    { name: "Bangladesh", code: "BGD" },
+    { name: "Russia", code: "RUS" },
+    { name: "Mexico", code: "MEX" },
+    { name: "Japan", code: "JPN" },
+    { name: "Ethiopia", code: "ETH" },
+    { name: "Philippines", code: "PHL" },
+    { name: "Egypt", code: "EGY" },
+    { name: "Vietnam", code: "VNM" },
+    { name: "DR Congo", code: "COD" },
+    { name: "Turkey", code: "TUR" },
+    { name: "Iran", code: "IRN" },
+    { name: "Germany", code: "DEU" },
+    { name: "Thailand", code: "THA" }
+  ];
+  // Predefined colors for slices
+const sliceColors = [
+    "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
+    "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
+    "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000",
+    "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080"
+  ];
+  
+  // Function to draw the country wheel
+  function drawWheel() {
+    const numSlices = countries.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+  
+    for (let i = 0; i < numSlices; i++) {
+      // Draw slices
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(200, 200); // Center of the wheel
+      wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
+      wheelCtx.closePath();
+  
+      // Fill each slice with a unique color
+      wheelCtx.fillStyle = sliceColors[i % sliceColors.length];
+      wheelCtx.fill();
+      wheelCtx.strokeStyle = "#ffffff";
+      wheelCtx.lineWidth = 2;
+      wheelCtx.stroke();
+  
+      // Add country abbreviation
+      wheelCtx.save();
+      wheelCtx.translate(200, 200);
+      wheelCtx.rotate(i * sliceAngle + sliceAngle / 2);
+      wheelCtx.textAlign = "center";
+      wheelCtx.fillStyle = "#ffffff";
+      wheelCtx.font = "bold 14px Arial";
+      wheelCtx.fillText(countries[i].code, 120, 5);
+      wheelCtx.restore();
+    }
+  }
+  function spinWheel() {
+    const spins = Math.floor(Math.random() * 5) + 3; // At least 3 spins
+    const stopAngle = Math.random() * 2 * Math.PI; // Random stop angle
+    const finalAngle = spins * 2 * Math.PI + stopAngle;
+  
+    let currentAngle = 0;
+  
+    function animateSpin() {
+      currentAngle += 0.1;
+      wheelAngle = currentAngle % (2 * Math.PI);
+  
+      // Clear and redraw the wheel
+      wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+      wheelCtx.save();
+      wheelCtx.translate(200, 200);
+      wheelCtx.rotate(wheelAngle);
+      wheelCtx.translate(-200, -200);
+      drawWheel();
+      wheelCtx.restore();
+  
+      if (currentAngle < finalAngle) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        // Determine selected country
+        const sliceAngle = (2 * Math.PI) / countries.length;
+        const selectedIndex = Math.floor(
+          ((2 * Math.PI) - (wheelAngle % (2 * Math.PI))) / sliceAngle
+        ) % countries.length;
+  
+        const selectedCountry = countries[selectedIndex].name;
+        selectedCountryText.textContent = `Selected Country: ${selectedCountry}`;
+      }
+    }
+  
+    animateSpin();
+  }
   
