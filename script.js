@@ -127,7 +127,10 @@ canvas.addEventListener("mousemove", (e) => {
   // Clear preview canvas
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-  if (currentTool === "rectangle") {
+  if (currentTool === "freehand") {
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+  } else if (currentTool === "rectangle") {
     const width = endX - startX;
     const height = endY - startY;
 
@@ -144,6 +147,15 @@ canvas.addEventListener("mousemove", (e) => {
     previewCtx.beginPath();
     previewCtx.arc(startX, startY, radius, 0, Math.PI * 2);
     previewCtx.stroke();
+  } else if (currentTool === "star") {
+    const outerRadius = Math.sqrt(
+      Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
+    );
+    const innerRadius = outerRadius / 2;
+
+    previewCtx.strokeStyle = ctx.strokeStyle;
+    previewCtx.lineWidth = ctx.lineWidth;
+    drawStar(previewCtx, startX, startY, 5, outerRadius, innerRadius);
   }
 });
 
@@ -169,7 +181,11 @@ canvas.addEventListener("mouseup", (e) => {
     ctx.arc(startX, startY, radius, 0, Math.PI * 2);
     ctx.stroke();
   } else if (currentTool === "star") {
-    drawStar(ctx, endX, endY, 5, 40, 20);
+    const outerRadius = Math.sqrt(
+      Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
+    );
+    const innerRadius = outerRadius / 2;
+    drawStar(ctx, startX, startY, 5, outerRadius, innerRadius);
   }
 });
 
@@ -208,3 +224,90 @@ document.getElementById("colorPicker").addEventListener("input", (e) => {
 document.getElementById("lineWidth").addEventListener("input", (e) => {
   ctx.lineWidth = e.target.value;
 });
+// Top 20 most populous countries
+const countries = [
+    "China", "India", "United States", "Indonesia", "Pakistan", "Nigeria",
+    "Brazil", "Bangladesh", "Russia", "Mexico", "Japan", "Ethiopia",
+    "Philippines", "Egypt", "Vietnam", "DR Congo", "Turkey", "Iran",
+    "Germany", "Thailand"
+  ];
+  
+  const wheelCanvas = document.getElementById("wheelCanvas");
+  const wheelCtx = wheelCanvas.getContext("2d");
+  const spinButton = document.getElementById("spinWheel");
+  const selectedCountryText = document.getElementById("selectedCountry");
+  
+  let wheelAngle = 0;
+  
+  // Function to draw the country wheel
+  function drawWheel() {
+    const numSlices = countries.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
+  
+    for (let i = 0; i < numSlices; i++) {
+      // Draw slice
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(200, 200); // Center of the wheel
+      wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
+      wheelCtx.closePath();
+  
+      // Alternate colors for slices
+      wheelCtx.fillStyle = i % 2 === 0 ? "#f4a261" : "#2a9d8f";
+      wheelCtx.fill();
+      wheelCtx.stroke();
+  
+      // Add country names
+      wheelCtx.save();
+      wheelCtx.translate(200, 200);
+      wheelCtx.rotate(i * sliceAngle + sliceAngle / 2);
+      wheelCtx.textAlign = "center";
+      wheelCtx.fillStyle = "#ffffff";
+      wheelCtx.font = "12px Arial";
+      wheelCtx.fillText(countries[i], 120, 5); // Adjust text position
+      wheelCtx.restore();
+    }
+  }
+  
+  // Function to spin the wheel
+  function spinWheel() {
+    let spinCount = Math.floor(Math.random() * 5) + 3; // Spin at least 3 full turns
+    const stopAngle = Math.random() * 2 * Math.PI; // Random stopping position
+    const finalAngle = (spinCount * 2 * Math.PI) + stopAngle;
+  
+    let currentAngle = 0;
+    const spinSpeed = 20;
+  
+    function animateSpin() {
+      currentAngle += 0.1; // Spin increment
+      wheelAngle = currentAngle % (2 * Math.PI);
+  
+      // Clear and redraw the wheel
+      wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+      wheelCtx.save();
+      wheelCtx.translate(200, 200);
+      wheelCtx.rotate(wheelAngle);
+      wheelCtx.translate(-200, -200);
+      drawWheel();
+      wheelCtx.restore();
+  
+      if (currentAngle < finalAngle) {
+        requestAnimationFrame(animateSpin);
+      } else {
+        // Calculate selected country
+        const selectedSlice = Math.floor(
+          ((2 * Math.PI) - (wheelAngle % (2 * Math.PI))) /
+          ((2 * Math.PI) / countries.length)
+        );
+  
+        const selectedCountry = countries[selectedSlice % countries.length];
+        selectedCountryText.innerText = `Selected Country: ${selectedCountry}`;
+      }
+    }
+  
+    animateSpin();
+  }
+  
+  // Initialize the wheel
+  drawWheel();
+  spinButton.addEventListener("click", spinWheel);
+  
