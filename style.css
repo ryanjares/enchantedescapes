@@ -30,4 +30,19 @@ body {
   input[type="color"] {
     margin-left: 10px;
   }
+  #randomCountryWheel {
+    margin-top: 30px;
+    text-align: center;
+  }
   
+  #randomCountryWheel canvas {
+    margin: 10px auto;
+    display: block;
+  }
+  
+  #spinWheel {
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+    
