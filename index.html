@@ -7,34 +7,44 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Flag Drawing Tool</h1>
-  <canvas id="flagCanvas" width="800" height="400" style="border:1px solid black;"></canvas>
-  <br>
-  <button id="drawFreehand">Freehand Tool</button>
-  <button id="drawRectangle">Rectangle Tool</button>
-  <button id="drawCircle">Circle Tool</button>
-  <button id="drawStar">Star Tool</button>
-  <button id="bucketFill">Bucket Fill Tool</button>  
-  <br>
-  <label for="lineWidth">Line Thickness:</label>
-  <input type="range" id="lineWidth" min="1" max="20" value="5">
-  <label for="colorPicker">Choose a color:</label>
-  <input type="color" id="colorPicker" value="#000000">
+  <header>
+    <h1>Flag Drawing Tool</h1>
+  </header>
+
+  <main>
+    <!-- Drawing Tool Section -->
+    <section id="drawing-tools">
+      <h2>Canvas Drawing</h2>
+      <canvas id="flagCanvas" width="800" height="400"></canvas>
+      <div id="tool-controls">
+        <button id="drawFreehand">Freehand Tool</button>
+        <button id="drawRectangle">Rectangle Tool</button>
+        <button id="drawCircle">Circle Tool</button>
+        <button id="drawStar">Star Tool</button>
+        <button id="bucketFill">Bucket Fill</button>
+        <button id="clearCanvas">Clear Canvas</button>
+      </div>
+      <div id="tool-settings">
+        <label for="colorPicker">Select Color:</label>
+        <input type="color" id="colorPicker" value="#000000">
+        <label for="lineWidth">Line Thickness:</label>
+        <input type="range" id="lineWidth" min="1" max="20" value="5">
+      </div>
+    </section>
+
+    <!-- Country Wheel Section -->
+    <section id="random-country-wheel">
+      <h2>Random Country Wheel</h2>
+      <canvas id="wheelCanvas" width="400" height="400"></canvas>
+      <button id="spinWheel">Spin the Wheel</button>
+      <p id="selectedCountry">Selected Country: None</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2024 Flag Drawing Tool</p>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
-<div id="randomCountryWheel">
-    <h2>Random Country Wheel</h2>
-    <canvas id="wheelCanvas" width="400" height="400" style="border: 1px solid black;"></canvas>
-    <br>
-    <button id="spinWheel">Spin the Wheel</button>
-    <p id="selectedCountry">Selected Country: None</p>
-  </div>
-  <div id="randomCountryWheel">
-    <h2>Random Country Wheel</h2>
-    <canvas id="wheelCanvas" width="400" height="400" style="border: 1px solid black;"></canvas>
-    <br>
-    <button id="spinWheel">Spin the Wheel</button>
-    <p id="selectedCountry">Selected Country: None</p>
-  </div>
-  
