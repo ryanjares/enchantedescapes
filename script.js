@@ -41,4 +41,8 @@ canvas.addEventListener("mouseleave", () => {
 document.getElementById("clearCanvas").addEventListener("click", () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   });
-  
+// Change stroke color
+document.getElementById("colorPicker").addEventListener("input", (e) => {
+    ctx.strokeStyle = e.target.value;
+  });
+    
