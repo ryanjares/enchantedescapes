@@ -226,37 +226,40 @@ canvas.addEventListener("mouseup", (e) => {
     drawStar(ctx, startX, startY, 5, outerRadius, innerRadius);
   }
 });
+// Get the canvas and context
+const wheelCanvas = document.getElementById("wheelCanvas");
+const wheelCtx = wheelCanvas.getContext("2d");
 
+// List of test colors for the slices
+const sliceColors = [
+  "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF",
+  "#00FFFF", "#800000", "#808000", "#008000", "#800080",
+  "#008080", "#000080", "#FFA500", "#A52A2A", "#5F9EA0",
+  "#7FFF00", "#DC143C", "#00CED1", "#9400D3", "#FF1493"
+];
+
+// Simplified draw function
 function drawWheel() {
-    const numSlices = countries.length; // Total slices
-    const sliceAngle = (2 * Math.PI) / numSlices; // Angle of each slice
-  
-    for (let i = 0; i < numSlices; i++) {
-      // Draw slice
-      wheelCtx.beginPath();
-      wheelCtx.moveTo(200, 200); // Center of the wheel
-      wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
-      wheelCtx.closePath();
-  
-      // Fill slice with unique color
-      wheelCtx.fillStyle = sliceColors[i % sliceColors.length];
-      wheelCtx.fill();
-  
-      // Add border to each slice
-      wheelCtx.strokeStyle = "#ffffff";
-      wheelCtx.lineWidth = 2;
-      wheelCtx.stroke();
-  
-      // Add 3-letter abbreviation to each slice
-      wheelCtx.save();
-      wheelCtx.translate(200, 200);
-      wheelCtx.rotate(i * sliceAngle + sliceAngle / 2);
-      wheelCtx.textAlign = "center";
-      wheelCtx.fillStyle = "#ffffff";
-      wheelCtx.font = "bold 14px Arial";
-      wheelCtx.fillText(countries[i].code, 120, 5); // Adjust position
-      wheelCtx.restore();
-    }
-  }
-  drawWheel(); // Draw the wheel on page load
+  const numSlices = 20; // Number of slices
+  const sliceAngle = (2 * Math.PI) / numSlices; // Angle of each slice
 
+  for (let i = 0; i < numSlices; i++) {
+    // Draw each slice
+    wheelCtx.beginPath();
+    wheelCtx.moveTo(200, 200); // Center of the wheel
+    wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
+    wheelCtx.closePath();
+
+    // Fill slice with color
+    wheelCtx.fillStyle = sliceColors[i % sliceColors.length];
+    wheelCtx.fill();
+
+    // Stroke for visibility
+    wheelCtx.strokeStyle = "#FFFFFF";
+    wheelCtx.lineWidth = 2;
+    wheelCtx.stroke();
+  }
+}
+
+// Call the function to draw the wheel
+drawWheel();
