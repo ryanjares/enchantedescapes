@@ -272,46 +272,8 @@ const countries = [
     }
   }
   
-  // Function to spin the wheel
-  function spinWheel() {
-    const spins = Math.floor(Math.random() * 5) + 3; // At least 3 spins
-    const stopAngle = Math.random() * 2 * Math.PI; // Random stop angle
-    const finalAngle = spins * 2 * Math.PI + stopAngle;
-  
-    let currentAngle = 0;
-  
-    function animateSpin() {
-      currentAngle += 0.1;
-      wheelAngle = currentAngle % (2 * Math.PI);
-  
-      // Clear and redraw the wheel
-      wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
-      wheelCtx.save();
-      wheelCtx.translate(200, 200);
-      wheelCtx.rotate(wheelAngle);
-      wheelCtx.translate(-200, -200);
-      drawWheel();
-      wheelCtx.restore();
-  
-      if (currentAngle < finalAngle) {
-        requestAnimationFrame(animateSpin);
-      } else {
-        // Calculate selected country
-        const selectedIndex = Math.floor(
-          ((2 * Math.PI) - (wheelAngle % (2 * Math.PI))) / ((2 * Math.PI) / countries.length)
-        );
-        const selectedCountry = countries[selectedIndex % countries.length];
-        selectedCountryText.textContent = `Selected Country: ${selectedCountry}`;
-      }
-    }
-  
-    animateSpin();
-  }
-  
-  // Initialize wheel
-  drawWheel();
-  spinButton.addEventListener("click", spinWheel);
-  const countries = [
+  // Country data with abbreviations
+const countries = [
     { name: "China", code: "CHN" },
     { name: "India", code: "IND" },
     { name: "United States", code: "USA" },
@@ -333,15 +295,23 @@ const countries = [
     { name: "Germany", code: "DEU" },
     { name: "Thailand", code: "THA" }
   ];
+  
   // Predefined colors for slices
-const sliceColors = [
+  const sliceColors = [
     "#e6194b", "#3cb44b", "#ffe119", "#4363d8", "#f58231",
     "#911eb4", "#46f0f0", "#f032e6", "#bcf60c", "#fabebe",
     "#008080", "#e6beff", "#9a6324", "#fffac8", "#800000",
     "#aaffc3", "#808000", "#ffd8b1", "#000075", "#808080"
   ];
   
-  // Function to draw the country wheel
+  // Canvas elements
+  const wheelCanvas = document.getElementById("wheelCanvas");
+  const wheelCtx = wheelCanvas.getContext("2d");
+  const spinButton = document.getElementById("spinWheel");
+  const selectedCountryText = document.getElementById("selectedCountry");
+  
+  // Variables for wheel
+  let wheelAngle = 0;
   function drawWheel() {
     const numSlices = countries.length;
     const sliceAngle = (2 * Math.PI) / numSlices;
@@ -407,4 +377,6 @@ const sliceColors = [
   
     animateSpin();
   }
-  
+  // Initialize wheel
+drawWheel();
+spinButton.addEventListener("click", spinWheel);
