@@ -205,4 +205,136 @@ const countries = [
   // Initialize the wheel
   drawWheel();
   spinButton.addEventListener("click", spinWheel);
+  function drawWheel() {
+    const numSlices = countries.length;
+    const sliceAngle = (2 * Math.PI) / numSlices;
   
+    wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height); // Clear canvas
+    for (let i = 0; i < numSlices; i++) {
+      // Draw each slice
+      wheelCtx.beginPath();
+      wheelCtx.moveTo(200, 200); // Center of the wheel
+      wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
+      wheelCtx.closePath();
+  
+      // Alternate colors
+      wheelCtx.fillStyle = i % 2 === 0 ? "#f4a261" : "#2a9d8f";
+      wheelCtx.fill();
+      wheelCtx.stroke();
+  
+      // Add country names
+      wheelCtx.save();
+      wheelCtx.translate(200, 200);
+      wheelCtx.rotate(i * sliceAngle + sliceAngle / 2);
+      wheelCtx.textAlign = "center";
+      wheelCtx.fillStyle = "#ffffff";
+      wheelCtx.font = "14px Arial";
+      wheelCtx.fillText(countries[i], 120, 5); // Adjust text position
+      wheelCtx.restore();
+    }
+  }
+  document.getElementById("drawStar").addEventListener("click", () => {
+    currentTool = "star";
+  });
+  
+  function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+    let rot = Math.PI / 2 * 3;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+  
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i++) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+  
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  
+  canvas.addEventListener("mouseup", (e) => {
+    if (!isDrawing) return;
+    isDrawing = false;
+  
+    const endX = e.offsetX;
+    const endY = e.offsetY;
+  
+    if (currentTool === "star") {
+      const outerRadius = 40;
+      const innerRadius = 20;
+      drawStar(ctx, endX, endY, 5, outerRadius, innerRadius);
+    }
+  });
+  document.getElementById("bucketFill").addEventListener("click", () => {
+    currentTool = "bucket";
+  });
+  
+  function bucketFill(x, y, fillColor) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imgData.data;
+  
+    const targetColor = getPixelColor(x, y, data);
+    const queue = [[x, y]];
+  
+    function matchColor(pixel) {
+      return (
+        pixel[0] === targetColor[0] &&
+        pixel[1] === targetColor[1] &&
+        pixel[2] === targetColor[2] &&
+        pixel[3] === targetColor[3]
+      );
+    }
+  
+    while (queue.length) {
+      const [cx, cy] = queue.pop();
+      const pixelPos = (cy * canvas.width + cx) * 4;
+  
+      if (matchColor([data[pixelPos], data[pixelPos + 1], data[pixelPos + 2], data[pixelPos + 3]])) {
+        data[pixelPos] = fillColor[0];
+        data[pixelPos + 1] = fillColor[1];
+        data[pixelPos + 2] = fillColor[2];
+        data[pixelPos + 3] = fillColor[3];
+  
+        if (cx > 0) queue.push([cx - 1, cy]);
+        if (cx < canvas.width - 1) queue.push([cx + 1, cy]);
+        if (cy > 0) queue.push([cx, cy - 1]);
+        if (cy < canvas.height - 1) queue.push([cx, cy + 1]);
+      }
+    }
+  
+    ctx.putImageData(imgData, 0, 0);
+  }
+  
+  function getPixelColor(x, y, data) {
+    const index = (y * canvas.width + x) * 4;
+    return [data[index], data[index + 1], data[index + 2], data[index + 3]];
+  }
+  
+  canvas.addEventListener("mousedown", (e) => {
+    if (currentTool === "bucket") {
+      const x = Math.floor(e.offsetX);
+      const y = Math.floor(e.offsetY);
+      const fillColor = hexToRGBA(ctx.strokeStyle);
+      bucketFill(x, y, fillColor);
+    }
+  });
+  
+  function hexToRGBA(hex) {
+    const bigint = parseInt(hex.slice(1), 16);
+    return [
+      (bigint >> 16) & 255,
+      (bigint >> 8) & 255,
+      bigint & 255,
+      255,
+    ];
+  }
+      
