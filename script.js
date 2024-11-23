@@ -45,7 +45,7 @@ document.getElementById("clearCanvas").addEventListener("click", () => {
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 });
 
-// Event Listeners for Settings
+// Update settings for color and line width
 document.getElementById("colorPicker").addEventListener("input", (e) => {
   ctx.strokeStyle = e.target.value;
 });
@@ -54,7 +54,7 @@ document.getElementById("lineWidth").addEventListener("input", (e) => {
   ctx.lineWidth = e.target.value;
 });
 
-// Utility Function for Star Drawing
+// Utility function for star drawing
 function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
   let rot = Math.PI / 2 * 3;
   let x = cx;
@@ -79,6 +79,48 @@ function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
   ctx.stroke();
 }
 
+// Bucket fill utility functions
+function bucketFill(x, y, fillColor) {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+
+  const targetColor = getPixelColor(x, y, data);
+  const queue = [[x, y]];
+
+  function matchColor(pixel) {
+    return (
+      pixel[0] === targetColor[0] &&
+      pixel[1] === targetColor[1] &&
+      pixel[2] === targetColor[2] &&
+      pixel[3] === targetColor[3]
+    );
+  }
+
+  while (queue.length) {
+    const [cx, cy] = queue.pop();
+    const pixelPos = (cy * canvas.width + cx) * 4;
+
+    if (matchColor([data[pixelPos], data[pixelPos + 1], data[pixelPos + 2], data[pixelPos + 3]])) {
+      data[pixelPos] = fillColor[0];
+      data[pixelPos + 1] = fillColor[1];
+      data[pixelPos + 2] = fillColor[2];
+      data[pixelPos + 3] = fillColor[3];
+
+      if (cx > 0) queue.push([cx - 1, cy]);
+      if (cx < canvas.width - 1) queue.push([cx + 1, cy]);
+      if (cy > 0) queue.push([cx, cy - 1]);
+      if (cy < canvas.height - 1) queue.push([cx, cy + 1]);
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+}
+
+function getPixelColor(x, y, data) {
+  const index = (y * canvas.width + x) * 4;
+  return [data[index], data[index + 1], data[index + 2], data[index + 3]];
+}
+
 // Mouse Events for Drawing
 canvas.addEventListener("mousedown", (e) => {
   startX = e.offsetX;
@@ -88,6 +130,11 @@ canvas.addEventListener("mousedown", (e) => {
   if (currentTool === "freehand") {
     ctx.beginPath();
     ctx.moveTo(startX, startY);
+  } else if (currentTool === "bucket") {
+    const x = Math.floor(e.offsetX);
+    const y = Math.floor(e.offsetY);
+    const fillColor = ctx.strokeStyle.match(/\d+/g).map(Number);
+    bucketFill(x, y, fillColor.concat(255)); // Add alpha channel
   }
 });
 
@@ -100,7 +147,10 @@ canvas.addEventListener("mousemove", (e) => {
   // Clear the preview canvas for live updates
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
-  if (currentTool === "rectangle") {
+  if (currentTool === "freehand") {
+    ctx.lineTo(endX, endY);
+    ctx.stroke();
+  } else if (currentTool === "rectangle") {
     const width = endX - startX;
     const height = endY - startY;
 
@@ -158,59 +208,3 @@ canvas.addEventListener("mouseup", (e) => {
     drawStar(ctx, startX, startY, 5, outerRadius, innerRadius);
   }
 });
-
-// Fix Bucket Tool (To Be Added)
-function bucketFill(x, y, fillColor) {
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const data = imgData.data;
-  
-    const targetColor = getPixelColor(x, y, data);
-    const queue = [[x, y]];
-  
-    function matchColor(pixel) {
-      return (
-        pixel[0] === targetColor[0] &&
-        pixel[1] === targetColor[1] &&
-        pixel[2] === targetColor[2] &&
-        pixel[3] === targetColor[3]
-      );
-    }
-  
-    while (queue.length) {
-      const [cx, cy] = queue.pop();
-      const pixelPos = (cy * canvas.width + cx) * 4;
-  
-      if (matchColor([data[pixelPos], data[pixelPos + 1], data[pixelPos + 2], data[pixelPos + 3]])) {
-        data[pixelPos] = fillColor[0];
-        data[pixelPos + 1] = fillColor[1];
-        data[pixelPos + 2] = fillColor[2];
-        data[pixelPos + 3] = fillColor[3];
-  
-        if (cx > 0) queue.push([cx - 1, cy]);
-        if (cx < canvas.width - 1) queue.push([cx + 1, cy]);
-        if (cy > 0) queue.push([cx, cy - 1]);
-        if (cy < canvas.height - 1) queue.push([cx, cy + 1]);
-      }
-    }
-  
-    ctx.putImageData(imgData, 0, 0);
-  }
-  
-  function getPixelColor(x, y, data) {
-    const index = (y * canvas.width + x) * 4;
-    return [data[index], data[index + 1], data[index + 2], data[index + 3]];
-  }
-  
-  document.getElementById("bucketFill").addEventListener("click", () => {
-    currentTool = "bucket";
-  });
-  
-  canvas.addEventListener("mousedown", (e) => {
-    if (currentTool === "bucket") {
-      const x = Math.floor(e.offsetX);
-      const y = Math.floor(e.offsetY);
-      const fillColor = ctx.strokeStyle.match(/\d+/g).map(Number);
-      bucketFill(x, y, fillColor.concat(255)); // Add alpha channel
-    }
-  });
-  
