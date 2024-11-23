@@ -263,3 +263,5 @@ function drawWheel() {
 
 // Call the function to draw the wheel
 drawWheel();
+wheelCtx.fillStyle = "#FF0000";
+wheelCtx.fillRect(50, 50, 100, 100); // Draw a red square
