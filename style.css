@@ -1,3 +1,4 @@
+/* Global Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -9,57 +10,62 @@ body {
   
   header {
     background-color: #007bff;
-    color: white;
+    color: #ffffff;
     padding: 20px 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  header h1 {
+    margin: 0;
+    font-size: 24px;
   }
   
   main {
     padding: 20px;
   }
   
+  /* Canvas Styling */
   canvas {
-    margin: 20px auto;
     display: block;
+    margin: 20px auto;
     border: 1px solid #ccc;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Tool Controls */
+  #tool-controls, #tool-settings {
+    margin: 15px auto;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
   }
   
   button {
     background-color: #007bff;
-    color: white;
+    color: #ffffff;
     border: none;
-    padding: 10px 20px;
-    margin: 10px 5px;
-    cursor: pointer;
+    padding: 10px 15px;
     font-size: 14px;
+    cursor: pointer;
     border-radius: 5px;
+    transition: background-color 0.3s;
   }
   
   button:hover {
     background-color: #0056b3;
   }
   
-  #tool-settings {
-    margin-top: 10px;
+  label {
+    font-weight: bold;
+    margin-right: 5px;
   }
   
-  #tool-settings input[type="color"] {
-    margin-left: 10px;
+  input[type="color"], input[type="range"] {
+    margin-left: 5px;
   }
   
-  #tool-settings input[type="range"] {
-    margin-left: 10px;
-  }
-  
-  #random-country-wheel {
-    margin-top: 40px;
-  }
-  
-  footer {
-    background-color: #333;
-    color: white;
-    padding: 10px 0;
-    margin-top: 20px;
-  }
+  /* Random Country Wheel Section */
   #random-country-wheel {
     margin-top: 40px;
     text-align: center;
@@ -67,7 +73,7 @@ body {
   
   #random-country-wheel canvas {
     display: block;
-    margin: 0 auto;
+    margin: 20px auto;
     border-radius: 50%;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
@@ -80,10 +86,25 @@ body {
     font-size: 16px;
     cursor: pointer;
     border-radius: 5px;
-    margin-top: 10px;
+    transition: background-color 0.3s;
   }
   
   #spinWheel:hover {
     background-color: #218838;
+  }
+  
+  #selectedCountry {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  
+  /* Footer Styling */
+  footer {
+    background-color: #333;
+    color: #ffffff;
+    padding: 10px 0;
+    font-size: 14px;
+    margin-top: 20px;
   }
   

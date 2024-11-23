@@ -1,4 +1,4 @@
-// Canvas setup
+// Canvas setup for the drawing tool
 const canvas = document.getElementById("flagCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -13,17 +13,42 @@ previewCanvas.style.top = canvas.offsetTop + "px";
 previewCanvas.style.pointerEvents = "none";
 document.body.appendChild(previewCanvas);
 
-// State variables
+// State variables for drawing tools
 let isDrawing = false;
 let currentTool = "freehand";
 let startX = 0;
 let startY = 0;
 
-// Set default drawing settings
+// Default drawing settings
 ctx.strokeStyle = "#000000";
 ctx.lineWidth = 5;
 
-// Event Listeners for Tools
+// Utility function to draw a star
+function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+  let rot = Math.PI / 2 * 3;
+  let x = cx;
+  let y = cy;
+  const step = Math.PI / spikes;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - outerRadius);
+  for (let i = 0; i < spikes; i++) {
+    x = cx + Math.cos(rot) * outerRadius;
+    y = cy + Math.sin(rot) * outerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+
+    x = cx + Math.cos(rot) * innerRadius;
+    y = cy + Math.sin(rot) * innerRadius;
+    ctx.lineTo(x, y);
+    rot += step;
+  }
+  ctx.lineTo(cx, cy - outerRadius);
+  ctx.closePath();
+  ctx.stroke();
+}
+
+// Event listeners for tool selection
 document.getElementById("drawFreehand").addEventListener("click", () => {
   currentTool = "freehand";
 });
@@ -49,7 +74,7 @@ document.getElementById("clearCanvas").addEventListener("click", () => {
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 });
 
-// Update settings for color and line width
+// Event listeners for settings updates
 document.getElementById("colorPicker").addEventListener("input", (e) => {
   ctx.strokeStyle = e.target.value;
 });
@@ -58,66 +83,10 @@ document.getElementById("lineWidth").addEventListener("input", (e) => {
   ctx.lineWidth = e.target.value;
 });
 
-// Utility function for star drawing
-function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
-  let rot = Math.PI / 2 * 3;
-  let x = cx;
-  let y = cy;
-  const step = Math.PI / spikes;
-
-  ctx.beginPath();
-  ctx.moveTo(cx, cy - outerRadius);
-  for (let i = 0; i < spikes; i++) {
-    x = cx + Math.cos(rot) * outerRadius;
-    y = cy + Math.sin(rot) * outerRadius;
-    ctx.lineTo(x, y);
-    rot += step;
-
-    x = cx + Math.cos(rot) * innerRadius;
-    y = cy + Math.sin(rot) * innerRadius;
-    ctx.lineTo(x, y);
-    rot += step;
-  }
-  ctx.lineTo(cx, cy - outerRadius);
-  ctx.closePath();
-  ctx.stroke();
-}
-
-// Bucket fill utility functions
-function bucketFill(x, y, fillColor) {
-  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const data = imgData.data;
-  const targetColor = getPixelColor(x, y, data);
-
-  if (!colorsMatch(targetColor, fillColor)) {
-    floodFill(data, canvas.width, canvas.height, x, y, targetColor, fillColor);
-    ctx.putImageData(imgData, 0, 0);
-  }
-}
-
-function floodFill(data, width, height, x, y, targetColor, fillColor) {
-  const stack = [[x, y]];
-
-  while (stack.length > 0) {
-    const [cx, cy] = stack.pop();
-    const pixelPos = (cy * width + cx) * 4;
-
-    const currentColor = [
-      data[pixelPos],
-      data[pixelPos + 1],
-      data[pixelPos + 2],
-      data[pixelPos + 3],
-    ];
-
-    if (colorsMatch(currentColor, targetColor)) {
-      setPixelColor(data, pixelPos, fillColor);
-
-      if (cx > 0) stack.push([cx - 1, cy]);
-      if (cx < width - 1) stack.push([cx + 1, cy]);
-      if (cy > 0) stack.push([cx, cy - 1]);
-      if (cy < height - 1) stack.push([cx, cy + 1]);
-    }
-  }
+// Utility functions for bucket fill
+function getPixelColor(x, y, data) {
+  const index = (y * canvas.width + x) * 4;
+  return [data[index], data[index + 1], data[index + 2], data[index + 3]];
 }
 
 function colorsMatch(color1, color2) {
@@ -136,12 +105,40 @@ function setPixelColor(data, index, fillColor) {
   data[index + 3] = fillColor[3];
 }
 
-function getPixelColor(x, y, data) {
-  const index = (y * canvas.width + x) * 4;
-  return [data[index], data[index + 1], data[index + 2], data[index + 3]];
+function bucketFill(x, y, fillColor) {
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  const targetColor = getPixelColor(x, y, data);
+
+  if (!colorsMatch(targetColor, fillColor)) {
+    const queue = [[x, y]];
+
+    while (queue.length > 0) {
+      const [cx, cy] = queue.pop();
+      const pixelPos = (cy * canvas.width + cx) * 4;
+
+      const currentColor = [
+        data[pixelPos],
+        data[pixelPos + 1],
+        data[pixelPos + 2],
+        data[pixelPos + 3],
+      ];
+
+      if (colorsMatch(currentColor, targetColor)) {
+        setPixelColor(data, pixelPos, fillColor);
+
+        if (cx > 0) queue.push([cx - 1, cy]);
+        if (cx < canvas.width - 1) queue.push([cx + 1, cy]);
+        if (cy > 0) queue.push([cx, cy - 1]);
+        if (cy < canvas.height - 1) queue.push([cx, cy + 1]);
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+  }
 }
 
-// Mouse Events for Drawing
+// Drawing event listeners
 canvas.addEventListener("mousedown", (e) => {
   startX = e.offsetX;
   startY = e.offsetY;
@@ -151,10 +148,8 @@ canvas.addEventListener("mousedown", (e) => {
     ctx.beginPath();
     ctx.moveTo(startX, startY);
   } else if (currentTool === "bucket") {
-    const x = Math.floor(e.offsetX);
-    const y = Math.floor(e.offsetY);
-    const fillColor = hexToRGBA(ctx.strokeStyle);
-    bucketFill(x, y, fillColor.concat(255)); // Add alpha channel
+    const fillColor = ctx.strokeStyle.match(/\d+/g).map(Number);
+    bucketFill(startX, startY, fillColor.concat(255));
   }
 });
 
@@ -170,17 +165,13 @@ canvas.addEventListener("mousemove", (e) => {
     ctx.lineTo(endX, endY);
     ctx.stroke();
   } else if (currentTool === "rectangle") {
-    const width = endX - startX;
-    const height = endY - startY;
-
     previewCtx.strokeStyle = ctx.strokeStyle;
     previewCtx.lineWidth = ctx.lineWidth;
-    previewCtx.strokeRect(startX, startY, width, height);
+    previewCtx.strokeRect(startX, startY, endX - startX, endY - startY);
   } else if (currentTool === "circle") {
     const radius = Math.sqrt(
       Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
     );
-
     previewCtx.strokeStyle = ctx.strokeStyle;
     previewCtx.lineWidth = ctx.lineWidth;
     previewCtx.beginPath();
@@ -191,7 +182,6 @@ canvas.addEventListener("mousemove", (e) => {
       Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
     );
     const innerRadius = outerRadius / 2;
-
     previewCtx.strokeStyle = ctx.strokeStyle;
     previewCtx.lineWidth = ctx.lineWidth;
     drawStar(previewCtx, startX, startY, 5, outerRadius, innerRadius);
@@ -199,7 +189,6 @@ canvas.addEventListener("mousemove", (e) => {
 });
 
 canvas.addEventListener("mouseup", (e) => {
-  if (!isDrawing) return;
   isDrawing = false;
 
   const endX = e.offsetX;
@@ -208,9 +197,7 @@ canvas.addEventListener("mouseup", (e) => {
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
   if (currentTool === "rectangle") {
-    const width = endX - startX;
-    const height = endY - startY;
-    ctx.strokeRect(startX, startY, width, height);
+    ctx.strokeRect(startX, startY, endX - startX, endY - startY);
   } else if (currentTool === "circle") {
     const radius = Math.sqrt(
       Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2)
@@ -226,42 +213,32 @@ canvas.addEventListener("mouseup", (e) => {
     drawStar(ctx, startX, startY, 5, outerRadius, innerRadius);
   }
 });
-// Get the canvas and context
+
+// Country wheel setup
+const countries = [
+  { name: "China", code: "CHN" },
+  { name: "India", code: "IND" },
+  { name: "United States", code: "USA" },
+  // ... Add the remaining countries
+];
+
 const wheelCanvas = document.getElementById("wheelCanvas");
 const wheelCtx = wheelCanvas.getContext("2d");
 
-// List of test colors for the slices
-const sliceColors = [
-  "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF",
-  "#00FFFF", "#800000", "#808000", "#008000", "#800080",
-  "#008080", "#000080", "#FFA500", "#A52A2A", "#5F9EA0",
-  "#7FFF00", "#DC143C", "#00CED1", "#9400D3", "#FF1493"
-];
-
-// Simplified draw function
 function drawWheel() {
-  const numSlices = 20; // Number of slices
-  const sliceAngle = (2 * Math.PI) / numSlices; // Angle of each slice
+  const numSlices = countries.length;
+  const sliceAngle = (2 * Math.PI) / numSlices;
 
   for (let i = 0; i < numSlices; i++) {
-    // Draw each slice
     wheelCtx.beginPath();
-    wheelCtx.moveTo(200, 200); // Center of the wheel
+    wheelCtx.moveTo(200, 200);
     wheelCtx.arc(200, 200, 200, i * sliceAngle, (i + 1) * sliceAngle);
     wheelCtx.closePath();
 
-    // Fill slice with color
     wheelCtx.fillStyle = sliceColors[i % sliceColors.length];
     wheelCtx.fill();
-
-    // Stroke for visibility
-    wheelCtx.strokeStyle = "#FFFFFF";
-    wheelCtx.lineWidth = 2;
+    wheelCtx.strokeStyle = "#fff";
     wheelCtx.stroke();
-  }
-}
 
-// Call the function to draw the wheel
-drawWheel();
-wheelCtx.fillStyle = "#FF0000";
-wheelCtx.fillRect(50, 50, 100, 100); // Draw a red square
+    wheelCtx.save();
+    wheelCtx.translate(200, 200);
