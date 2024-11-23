@@ -7,60 +7,57 @@ body {
     text-align: center;
   }
   
+  header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px 0;
+  }
+  
+  main {
+    padding: 20px;
+  }
+  
   canvas {
-    border: 1px solid #ccc;
     margin: 20px auto;
     display: block;
+    border: 1px solid #ccc;
   }
   
   button {
     background-color: #007bff;
-    color: #fff;
+    color: white;
     border: none;
     padding: 10px 20px;
-    margin  
+    margin: 10px 5px;
+    cursor: pointer;
+    font-size: 14px;
+    border-radius: 5px;
   }
   
-  label {
-    font-size: 16px;
-    margin: 10px;
+  button:hover {
+    background-color: #0056b3;
   }
   
-  input[type="range"] {
-    margin: 0 10px;
+  #tool-settings {
+    margin-top: 10px;
   }
   
-  input[type="color"] {
+  #tool-settings input[type="color"] {
     margin-left: 10px;
   }
-  #randomCountryWheel {
-    margin-top: 30px;
-    text-align: center;
+  
+  #tool-settings input[type="range"] {
+    margin-left: 10px;
   }
   
-  #randomCountryWheel canvas {
-    margin: 10px auto;
-    display: block;
+  #random-country-wheel {
+    margin-top: 40px;
   }
   
-  #spinWheel {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-  #randomCountryWheel {
-    margin-top: 30px;
-    text-align: center;
+  footer {
+    background-color: #333;
+    color: white;
+    padding: 10px 0;
+    margin-top: 20px;
   }
   
-  #randomCountryWheel canvas {
-    margin: 10px auto;
-    display: block;
-  }
-  
-  #spinWheel {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-      
