@@ -40,6 +40,10 @@ document.getElementById("drawStar").addEventListener("click", () => {
   currentTool = "star";
 });
 
+document.getElementById("bucketFill").addEventListener("click", () => {
+  currentTool = "bucket";
+});
+
 document.getElementById("clearCanvas").addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
@@ -83,37 +87,53 @@ function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
 function bucketFill(x, y, fillColor) {
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imgData.data;
-
   const targetColor = getPixelColor(x, y, data);
-  const queue = [[x, y]];
 
-  function matchColor(pixel) {
-    return (
-      pixel[0] === targetColor[0] &&
-      pixel[1] === targetColor[1] &&
-      pixel[2] === targetColor[2] &&
-      pixel[3] === targetColor[3]
-    );
+  if (!colorsMatch(targetColor, fillColor)) {
+    floodFill(data, canvas.width, canvas.height, x, y, targetColor, fillColor);
+    ctx.putImageData(imgData, 0, 0);
   }
+}
 
-  while (queue.length) {
-    const [cx, cy] = queue.pop();
-    const pixelPos = (cy * canvas.width + cx) * 4;
+function floodFill(data, width, height, x, y, targetColor, fillColor) {
+  const stack = [[x, y]];
 
-    if (matchColor([data[pixelPos], data[pixelPos + 1], data[pixelPos + 2], data[pixelPos + 3]])) {
-      data[pixelPos] = fillColor[0];
-      data[pixelPos + 1] = fillColor[1];
-      data[pixelPos + 2] = fillColor[2];
-      data[pixelPos + 3] = fillColor[3];
+  while (stack.length > 0) {
+    const [cx, cy] = stack.pop();
+    const pixelPos = (cy * width + cx) * 4;
 
-      if (cx > 0) queue.push([cx - 1, cy]);
-      if (cx < canvas.width - 1) queue.push([cx + 1, cy]);
-      if (cy > 0) queue.push([cx, cy - 1]);
-      if (cy < canvas.height - 1) queue.push([cx, cy + 1]);
+    const currentColor = [
+      data[pixelPos],
+      data[pixelPos + 1],
+      data[pixelPos + 2],
+      data[pixelPos + 3],
+    ];
+
+    if (colorsMatch(currentColor, targetColor)) {
+      setPixelColor(data, pixelPos, fillColor);
+
+      if (cx > 0) stack.push([cx - 1, cy]);
+      if (cx < width - 1) stack.push([cx + 1, cy]);
+      if (cy > 0) stack.push([cx, cy - 1]);
+      if (cy < height - 1) stack.push([cx, cy + 1]);
     }
   }
+}
 
-  ctx.putImageData(imgData, 0, 0);
+function colorsMatch(color1, color2) {
+  return (
+    color1[0] === color2[0] &&
+    color1[1] === color2[1] &&
+    color1[2] === color2[2] &&
+    color1[3] === color2[3]
+  );
+}
+
+function setPixelColor(data, index, fillColor) {
+  data[index] = fillColor[0];
+  data[index + 1] = fillColor[1];
+  data[index + 2] = fillColor[2];
+  data[index + 3] = fillColor[3];
 }
 
 function getPixelColor(x, y, data) {
@@ -133,7 +153,7 @@ canvas.addEventListener("mousedown", (e) => {
   } else if (currentTool === "bucket") {
     const x = Math.floor(e.offsetX);
     const y = Math.floor(e.offsetY);
-    const fillColor = ctx.strokeStyle.match(/\d+/g).map(Number);
+    const fillColor = hexToRGBA(ctx.strokeStyle);
     bucketFill(x, y, fillColor.concat(255)); // Add alpha channel
   }
 });
@@ -144,7 +164,6 @@ canvas.addEventListener("mousemove", (e) => {
   const endX = e.offsetX;
   const endY = e.offsetY;
 
-  // Clear the preview canvas for live updates
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
   if (currentTool === "freehand") {
@@ -186,7 +205,6 @@ canvas.addEventListener("mouseup", (e) => {
   const endX = e.offsetX;
   const endY = e.offsetY;
 
-  // Clear preview canvas
   previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
 
   if (currentTool === "rectangle") {
